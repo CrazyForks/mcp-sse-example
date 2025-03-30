@@ -1,0 +1,153 @@
+# https://i75corridor.dev/ llms-full.txt
+
+## i75 Corridor
+Hi, 👋
+
+We are i75 Corridor
+
+AI first software company. Backed by 2 real humans. Over 30+ years of combined experience.
+
+![i75 Corridor](https://i75corridor.dev/logo.png)
+
+## About
+
+We love to build cool shit. We move fast and leverage new tech. Diving into open-source projects and launching startups is our jam. We believe in giving back to the community. Stop making excuses and start building.
+
+Let'sfuckingcode.
+
+## Skills
+
+React
+
+Next.js
+
+Typescript
+
+Python
+
+Firebase
+
+Postgres
+
+Flutter
+
+iOS
+
+Android
+
+Projects
+
+## We build with AI
+
+We used AI driven development to increase our velocity and build more. We understand the value of time. We are always looking for ways to improve our workflow ethically and responsibly. Remember to build fast and ship often.
+
+[![i75 Corridor](https://i75corridor.dev/_next/image?url=%2Flogo.png&w=1080&q=75)](https://i75corridor.dev/)
+
+### i75 Corridor
+
+October 2024
+
+At i75 Corridor, we're passionate about crafting innovative solutions. We thrive in fast-paced environments, embracing cutting-edge technologies to drive progress. Our enthusiasm extends to contributing to open-source initiatives and spearheading startup ventures. Giving back to the community is integral to our ethos.
+
+Next.js
+
+Typescript
+
+Firebase
+
+TailwindCSS
+
+Shadcn UI
+
+Magic UI
+
+[Website](https://i75corridor.dev/)
+
+### Zone2
+
+October 2024
+
+Zone2 is an open-source project that empowers individuals to take control of their weight loss journey. By providing a platform for tracking progress, setting goals, and connecting with like-minded individuals, Zone2 aims to democratize access to effective weight loss strategies and support systems.
+
+Flutter
+
+Firebase
+
+iOS
+
+Android
+
+[Website](https://zone2.app/) [iOS](https://apps.apple.com/app/apple-store/id645123456789) [Android](https://play.google.com/store/apps/details?id=com.threetenlabs.zone2) [Source](https://github.com/threetenlabs/zone2)
+
+[![Text Yourself](https://i75corridor.dev/_next/image?url=%2Ftext-yourself.png&w=1080&q=75)](https://textyourself.app/)
+
+### Text Yourself
+
+December 2024
+
+Text Yourself is a platform that allows you to send yourself text messages from your phone. It's a simple way to stay organized and never miss a beat.
+
+Next.js
+
+Typescript
+
+TailwindCSS
+
+Shadcn UI
+
+Firebase
+
+Stripe
+
+Twilio
+
+[Website](https://textyourself.app/)
+
+### Just Keep Building
+
+Coming Soon
+
+Just Keep Building is a daily, or weekly service that give you a custom SMS messages on trending GitHub, Product Hunt and Hacker News.
+
+Next.js
+
+Typescript
+
+Firebase
+
+TailwindCSS
+
+Shadcn UI
+
+Magic UI
+
+Stripe
+
+Twilio
+
+[Website](https://justkeepbuild.ing/)
+
+Contact
+
+## Get in Touch
+
+Want to chat? Just hit us up [hello@i75corridor.dev](mailto:hello@i75corridor.dev) and we'll respond whenever we can.
+
+## I-75 Corridor Blog
+# blog
+
+[Hello World\\
+\\
+2024-06-18](https://i75corridor.dev/blog/hello-world)
+
+## Hello World Intro
+# Hello World
+
+June 18, 2024 (5mo ago)
+
+Hi there!
+
+```
+console.log("Hello World");
+```
+

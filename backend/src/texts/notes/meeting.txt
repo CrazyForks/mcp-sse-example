@@ -1,0 +1,5 @@
+This is a sample note file.
+
+It contains some text content that can be read through the MCP resources API.
+
+The text file resource uses a URI format: text://notes/meeting.txt

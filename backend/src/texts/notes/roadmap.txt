@@ -1,0 +1,11 @@
+# Project Roadmap
+
+## Q2 2025
+- Implement MCP resources
+- Add support for tools
+- Create documentation
+
+## Q3 2025
+- Expand API capabilities
+- Performance optimization
+- Release v1.0
