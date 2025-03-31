@@ -244,6 +244,292 @@ function populateDbStore() {
 // Populate the database store when server starts
 populateDbStore();
 
+// ===== MCP PROMPTS =====
+
+// Web search summary prompt
+server.prompt(
+  "search-summarize",
+  "Search the web and summarize results",
+  () => ({
+    messages: [
+      {
+        role: "user",
+        content: {
+          type: "text",
+          text: "Search for information and summarize the results.",
+        },
+      },
+    ],
+  })
+);
+
+// Product comparison prompt
+server.prompt(
+  "compare-products",
+  "Compare two products from the database",
+  () => ({
+    messages: [
+      {
+        role: "user",
+        content: {
+          type: "text",
+          text: "Please compare these two products and provide pros and cons of each. Use product IDs as parameters.",
+        },
+      },
+    ],
+  })
+);
+
+// User profile analysis prompt
+server.prompt("user-profile-summary", "Analyze user profile data", () => ({
+  messages: [
+    {
+      role: "user",
+      content: {
+        type: "text",
+        text: "Please analyze a user profile and provide a summary. Use the user ID as a parameter.",
+      },
+    },
+  ],
+}));
+
+// Document analysis prompt
+server.prompt(
+  "analyze-document",
+  "Analyze document content for insights",
+  () => ({
+    messages: [
+      {
+        role: "user",
+        content: {
+          type: "text",
+          text: "Please analyze a document and provide key insights. Use category and filename as parameters.",
+        },
+      },
+    ],
+  })
+);
+
+// Simple calculator prompt
+server.prompt("calculate", "Perform calculation using the add tool", () => ({
+  messages: [
+    {
+      role: "user",
+      content: {
+        type: "text",
+        text: "Calculate the sum of two numbers using the add tool. Provide the numbers as parameters.",
+      },
+    },
+  ],
+}));
+
+// Code analysis prompt
+server.prompt(
+  "analyze-code-file",
+  "Analyze code file for bugs and improvements",
+  { fileUri: z.string() },
+  ({ fileUri }) => ({
+    messages: [
+      {
+        role: "user",
+        content: {
+          type: "text",
+          text: `Analyze this code file for potential bugs and improvements: ${fileUri}`,
+        },
+      },
+      {
+        role: "user",
+        content: {
+          type: "resource",
+          resource: {
+            uri: `text://code/${fileUri}`,
+            text: `text://code/${fileUri}`,
+            mimeType: "text/plain",
+          },
+        },
+      },
+    ],
+  })
+);
+
+// Log analysis prompt
+server.prompt(
+  "analyze-logs",
+  "Analyze system logs for errors within a time period",
+  { hours: z.string() },
+  ({ hours }) => ({
+    messages: [
+      {
+        role: "user",
+        content: {
+          type: "text",
+          text: `Analyze these system logs from the past ${hours} hours and identify any critical issues:`,
+        },
+      },
+      {
+        role: "user",
+        content: {
+          type: "resource",
+          resource: {
+            uri: `log://system-${hours}h.log`,
+            text: `log://system-${hours}h.log`,
+            mimeType: "text/plain",
+          },
+        },
+      },
+    ],
+  })
+);
+
+// Multi-document comparison prompt
+server.prompt(
+  "compare-documents",
+  "Compare two documents and highlight differences",
+  { doc1: z.string(), doc2: z.string() },
+  ({ doc1, doc2 }) => ({
+    messages: [
+      {
+        role: "user",
+        content: {
+          type: "text",
+          text: "Compare these two documents and highlight key differences:",
+        },
+      },
+      {
+        role: "user",
+        content: {
+          type: "resource",
+          resource: {
+            uri: `text://documents/${doc1}`,
+            text: `text://documents/${doc1}`,
+            mimeType: "text/plain",
+          },
+        },
+      },
+      {
+        role: "user",
+        content: {
+          type: "resource",
+          resource: {
+            uri: `text://documents/${doc2}`,
+            text: `text://documents/${doc2}`,
+            mimeType: "text/plain",
+          },
+        },
+      },
+    ],
+  })
+);
+
+// User data analysis prompt
+server.prompt(
+  "analyze-user",
+  "Analyze user activity and profile",
+  { userId: z.string() },
+  ({ userId }) => ({
+    messages: [
+      {
+        role: "user",
+        content: {
+          type: "text",
+          text: "Analyze this user's profile and activity data:",
+        },
+      },
+      {
+        role: "user",
+        content: {
+          type: "resource",
+          resource: {
+            uri: `db://users/${userId}`,
+            text: `db://users/${userId}`,
+            mimeType: "application/json",
+          },
+        },
+      },
+      {
+        role: "user",
+        content: {
+          type: "resource",
+          resource: {
+            uri: `log://user-activity-${userId}.log`,
+            text: `log://user-activity-${userId}.log`,
+            mimeType: "text/plain",
+          },
+        },
+      },
+    ],
+  })
+);
+
+// Documentation search prompt
+server.prompt(
+  "search-documentation",
+  "Search documentation for specific topic",
+  { topic: z.string(), category: z.string() },
+  ({ topic, category }) => ({
+    messages: [
+      {
+        role: "user",
+        content: {
+          type: "text",
+          text: `Find information about "${topic}" in our documentation:`,
+        },
+      },
+      {
+        role: "user",
+        content: {
+          type: "resource",
+          resource: {
+            uri: `documentation://${category}`,
+            text: `documentation://${category}`,
+            mimeType: "text/plain",
+          },
+        },
+      },
+    ],
+  })
+);
+
+// Product recommendation prompt
+server.prompt(
+  "recommend-products",
+  "Recommend products based on user preferences",
+  { preferences: z.string(), userId: z.string() },
+  ({ preferences, userId }) => ({
+    messages: [
+      {
+        role: "user",
+        content: {
+          type: "text",
+          text: `Recommend products based on these preferences: ${preferences}`,
+        },
+      },
+      {
+        role: "user",
+        content: {
+          type: "resource",
+          resource: {
+            uri: `db://users/${userId}`,
+            text: `db://users/${userId}`,
+            mimeType: "application/json",
+          },
+        },
+      },
+      {
+        role: "user",
+        content: {
+          type: "resource",
+          resource: {
+            uri: `db://products/catalog`,
+            text: `db://products/catalog`,
+            mimeType: "application/json",
+          },
+        },
+      },
+    ],
+  })
+);
+
 const app = express();
 
 // Configure CORS middleware to allow all origins
