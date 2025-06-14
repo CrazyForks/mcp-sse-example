@@ -8,6 +8,7 @@ export default defineConfig({
     proxy: {
       "/sse": "http://localhost:3001",
       "/messages": "http://localhost:3001",
+      "/mcp": "http://localhost:3001"
     },
   },
 });

@@ -5,11 +5,16 @@ import {
   ResourceTemplate,
 } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
+import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { z } from "zod";
 import cors from "cors";
 import fs from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
+import { Request, Response } from "express";
+import crypto from "crypto";
+import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
+
 
 // Load environment variables
 config();
@@ -535,11 +540,16 @@ const app = express();
 // Configure CORS middleware to allow all origins
 app.use(
   cors({
-    origin: "*",
-    methods: ["GET", "POST", "OPTIONS"],
-    credentials: false,
+    origin: ["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:5174", "http://127.0.0.1:5174"], // Vite's dev server ports
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Mcp-Session-Id", "Accept", "Last-Event-ID"],
+    exposedHeaders: ["Mcp-Session-Id"],
+    credentials: true
   })
 );
+
+// Add JSON parsing middleware for /mcp route only
+app.use('/mcp', express.json());
 
 // Add a simple root route handler
 app.get("/", (req, res) => {
@@ -551,6 +561,7 @@ app.get("/", (req, res) => {
       "/": "Server information (this response)",
       "/sse": "Server-Sent Events endpoint for MCP connection",
       "/messages": "POST endpoint for MCP messages",
+      "/mcp": "Streamable HTTP endpoint for MCP connection",
     },
     tools: [
       { name: "add", description: "Add two numbers together" },
@@ -559,21 +570,155 @@ app.get("/", (req, res) => {
   });
 });
 
-let transport: SSEServerTransport;
+// Store transports by session ID
+const transports: Record<string, StreamableHTTPServerTransport> = {};
+
+// SSE transport implementation
+let sseTransport: SSEServerTransport;
 
 app.get("/sse", async (req, res) => {
-  transport = new SSEServerTransport("/messages", res);
-  await server.connect(transport);
+  sseTransport = new SSEServerTransport("/messages", res);
+  await server.connect(sseTransport);
 });
 
 app.post("/messages", async (req, res) => {
   // Note: to support multiple simultaneous connections, these messages will
   // need to be routed to a specific matching transport. (This logic isn't
   // implemented here, for simplicity.)
-  await transport.handlePostMessage(req, res);
+  await sseTransport.handlePostMessage(req, res);
 });
 
-const PORT = process.env.PORT || 3001;
+// Streamable HTTP transport handler
+const streamableHttpHandler = async (
+  server: McpServer,
+  req: Request,
+  res: Response
+) => {
+  if (req.method === "POST") {
+    // Handle initial connection or regular POST request
+    const sessionId = req.headers["mcp-session-id"] as string | undefined;
+    
+    try {
+      // Check if this is an initialization request
+      const isInit = isInitializeRequest(req.body);
+      
+      // Create a new transport for this session if it doesn't exist or if this is an init request
+      if (!sessionId || !transports[sessionId] || isInit) {
+        console.log(`Creating new transport for ${isInit ? 'initialization request' : 'request without valid session'}`);
+        
+        const newSessionId = sessionId || crypto.randomUUID();
+        const transport = new StreamableHTTPServerTransport({
+          sessionIdGenerator: () => newSessionId,
+          onsessioninitialized: (sid) => {
+            // Store the transport by session ID
+            console.log(`Transport initialized with session ID: ${sid}`);
+            transports[sid] = transport;
+          }
+        });
+        
+        // Connect the transport to the server
+        await server.connect(transport);
+        console.log(`Connected transport to server`);
+        
+        // Set session ID header in response
+        res.setHeader("Mcp-Session-Id", newSessionId);
+        
+        // Use the new transport directly for this request - pass the request body
+        console.log(`Handling ${isInit ? 'initialization' : 'regular'} request with new transport`);
+        await transport.handleRequest(req, res, req.body);
+        return;
+      }
+      
+      // If we have a valid sessionId and transport, use it - pass the request body
+      if (sessionId && transports[sessionId]) {
+        console.log(`Using existing transport for session ${sessionId}`);
+        await transports[sessionId].handleRequest(req, res, req.body);
+        return;
+      }
+      
+      // If we get here, something went wrong
+      console.error(`No valid transport found for session ${sessionId}`);
+      res.status(400).json({
+        jsonrpc: "2.0",
+        error: {
+          code: -32000,
+          message: "Invalid session or transport not available",
+        },
+        id: null,
+      });
+    } catch (error) {
+      console.error("Error processing request:", error);
+      res.status(500).json({
+        jsonrpc: "2.0",
+        error: {
+          code: -32603,
+          message: "Internal server error",
+          data: String(error),
+        },
+        id: null,
+      });
+    }
+  } 
+  else if (req.method === "GET") {
+    // Handle SSE stream request
+    const sessionId = req.headers["mcp-session-id"] as string | undefined;
+    if (!sessionId || !transports[sessionId]) {
+      res.status(400).send("Invalid or missing session ID");
+      return;
+    }
+    
+    // Check for Last-Event-ID header for resumability
+    const lastEventId = req.headers["last-event-id"] as string | undefined;
+    if (lastEventId) {
+      console.log(`Client reconnecting with Last-Event-ID: ${lastEventId}`);
+    } else {
+      console.log(`Establishing new SSE stream for session ${sessionId}`);
+    }
+    
+    await transports[sessionId].handleRequest(req, res);
+  }
+  else if (req.method === "DELETE") {
+    // Handle session termination request
+    const sessionId = req.headers["mcp-session-id"] as string | undefined;
+    if (!sessionId || !transports[sessionId]) {
+      res.status(400).send("Invalid or missing session ID");
+      return;
+    }
+    
+    console.log(`Received session termination request for session ${sessionId}`);
+    await transports[sessionId].handleRequest(req, res);
+    
+    // Clean up after termination
+    delete transports[sessionId];
+  }
+  else {
+    // Handle other HTTP methods
+    res.status(405).send("Method not allowed");
+  }
+};
+
+app.all('/mcp', async (req, res) => {
+  await streamableHttpHandler(server, req, res);
+});
+
+const PORT = process.env.PORT || 3002;
 app.listen(PORT, () => {
-  console.log(`MCP SSE Server running on port ${PORT}`);
+  console.log(`MCP Server running on port ${PORT}`);
+});
+
+// Handle server shutdown
+process.on('SIGINT', async () => {
+  console.log('Shutting down server...');
+  // Close all active transports to properly clean up resources
+  for (const sessionId in transports) {
+    try {
+      console.log(`Closing transport for session ${sessionId}`);
+      await transports[sessionId].close();
+      delete transports[sessionId];
+    } catch (error) {
+      console.error(`Error closing transport for session ${sessionId}:`, error);
+    }
+  }
+  console.log('Server shutdown complete');
+  process.exit(0);
 });
