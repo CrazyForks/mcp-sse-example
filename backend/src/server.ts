@@ -82,6 +82,7 @@ server.resource("config", "config://app", async (uri) => ({
 server.resource("documentation", "documentation://i75corridor", async (uri) => {
   const logPath = path.join(
     __dirname,
+    "..",
     "texts",
     "documentation",
     "i75corridor",
@@ -119,7 +120,7 @@ server.resource(
   new ResourceTemplate("log://{filename}", { list: undefined }),
   async (uri, { filename }) => {
     try {
-      const logPath = path.join(__dirname, "logs", String(filename));
+      const logPath = path.join(__dirname, "..", "logs", String(filename));
       const content = await fs.readFile(logPath, "utf-8");
       return {
         contents: [
@@ -147,6 +148,7 @@ server.resource(
     try {
       const docPath = path.join(
         __dirname,
+        "..",
         "documents",
         String(type),
         String(filename)
@@ -180,6 +182,7 @@ server.resource(
     try {
       const textPath = path.join(
         __dirname,
+        "..",
         "texts",
         String(category),
         String(filename)
