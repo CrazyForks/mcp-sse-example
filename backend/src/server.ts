@@ -80,11 +80,15 @@ server.resource("config", "config://app", async (uri) => ({
 }));
 
 server.resource("documentation", "documentation://i75corridor", async (uri) => {
+  // Environment-based path resolution
+  const basePath = process.env.NODE_ENV === 'production' 
+    ? path.join(process.cwd(), "dist")
+    : path.join(__dirname, "..");
+    
   const logPath = path.join(
-    __dirname,
-    "..",
+    basePath,
     "texts",
-    "documentation",
+    "documentation", 
     "i75corridor",
     "llms-full.txt"
   );

@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
+    "postbuild": "cp -r src/texts dist/",
     "start": "node dist/server.js",
     "dev": "NODE_OPTIONS=\"--loader ts-node/esm\" nodemon src/server.ts",
     "test": "NODE_OPTIONS=\"--loader ts-node/esm\" nodemon src/test.ts"
